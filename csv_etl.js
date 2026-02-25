@@ -9,7 +9,7 @@ const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'trella_csv_db',
-    password: 'geassr123',
+    password: 'PasswordMAskedForSecurity', // Make sure this is the port 5433 password!
     port: 5433,
     max: 20, // Only allow 20 connections at once so we don't crash the DB
 });

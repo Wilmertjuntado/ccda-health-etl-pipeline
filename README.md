@@ -1,53 +1,30 @@
-# Healthcare EMR Integration Pipeline (C-CDA to SQL)
+🚀 High-Performance Healthcare Data Engine (CSV to SQL)
 
-## 📌 Project Overview
+📌 Project Overview
+This project is a high-throughput ETL (Extract, Transform, Load) pipeline built to ingest large-scale synthetic patient datasets. Unlike standard row-by-row importers, this engine is optimized for scalability and memory efficiency, utilizing Node.js streams to handle massive files without system overhead.
 
-This project simulates a custom healthcare Interface Engine. It demonstrates an end-to-end data integration workflow that extracts clinical data from complex HL7 C-CDA (Consolidated Clinical Document Architecture) XML files, transforms the data for relational integrity, and loads it into a PostgreSQL database for advanced healthcare analytics.
+🛠️ Technology Stack
+•Language: JavaScript (Node.js) 💻
 
-**Data Source:** 100 Sample Synthetic Patient Records (C-CDA format).
+•Database: PostgreSQL (pgAdmin 4) 🐘
 
-## 🛠️ Technology Stack
+•Libraries: pg (Postgres client), csv-parser (Streaming parser), pg-format (Bulk insert formatting)
 
-* **Language:** JavaScript (Node.js)
-* **Database:** PostgreSQL (pgAdmin 4)
-* **Libraries:** `pg` (PostgreSQL client), `xmldom` (XML parsing), `xpath` (Node navigation)
-* **Concepts:** ETL, Advanced SQL (Windowing, CTEs, Aggregations), Object-Oriented Scripting, HL7/C-CDA Standards.
+•Concepts: Stream Processing, Bulk Batch Loading, Data Sanitization, Referential Integrity.
 
-## 🚀 Key Features & Pipeline Architecture
+🚀 Pipeline Architecture & Optimizations
 
-### 1. Extract (XML/XPath Parsing)
+1. Extract (Memory-Safe Streaming) 🌊
+•Utilized fs.createReadStream to process files in chunks, ensuring the system can process millions of rows without exceeding RAM limits.
 
-* Engineered a Node.js script to traverse deeply nested C-CDA XML trees.
-* Utilized `xpath` with proper HL7 namespaces (`urn:hl7-org:v3`) to accurately target specific patient demographics and clinical observation nodes.
-* Extracted critical identifiers (Patient IDs), demographics (Names, DOB), and vital signs/lab results from the `` and `` sections.
+•Implemented a header-mapping function to sanitize CSV headers (lowercase, trimming, and underscore replacement) for seamless database compatibility.
 
-### 2. Transform (Data Validation & Formatting)
+2. Transform (Sequential Loading & Logic) 🏗️
+•Engineered a Sequential Manifest to manage table dependencies. The engine ensures "Parent" records (e.g., patients.csv) are fully loaded before "Child" records (e.g., allergies.csv) to maintain database integrity.
 
-* Built transformation logic to convert raw HL7 timestamps (e.g., `20180416212254`) into standardized, ISO-compliant SQL `TIMESTAMP` formats.
-* Implemented conditional validation to ensure only records with complete data (Observation Name, Value, and Time) are processed, preventing database insertion errors and ensuring clean data flow.
+•Applied transformation logic to handle data types, such as converting empty strings to SQL NULL and formatting healthcare expense metrics.
 
-### 3. Load (Relational Database Design)
+3. Load (High-Speed Bulk Ingestion) 📦
+•Implemented Batching Logic (500 rows per batch) to minimize database round-trips.
 
-* Designed a relational SQL schema to handle the "One-to-Many" relationship between a single patient and their multiple historical medical observations.
-* Utilized `ON CONFLICT DO NOTHING` constraints to prevent duplicate record ingestion during automated batch runs.
-
-## 🗄️ Database Schema
-
-The data is structured into two primary tables:
-
-* **`patients`:** Stores unique patient identifiers, first name, and last name.
-* **`observations`:** Stores individual clinical data points (e.g., Blood Pressure, BMI) linked to the patient via a foreign key (`patient_external_id`), along with the recorded value, unit, and exact timestamp.
-
-## 📊 Advanced Analytics & SQL
-
-This pipeline supports complex healthcare queries to drive analytics and decision-making.
-
-**Example 1: Identifying the Most Recent Clinical Readings (Window Functions)**
-Used Common Table Expressions (CTEs) and `ROW_NUMBER() OVER (PARTITION BY ...)` to filter out historical noise and return only the latest critical vitals (e.g., Systolic Blood Pressure) for each patient.
-
-**Example 2: Patient Health Aggregations**
-Utilized `JOIN` and `GROUP BY` aggregations to calculate average patient metrics (e.g., Average BMI) by casting stored text values into numeric formats for mathematical analysis.
-
-## 💡 Business Value
-
-By automating the extraction and standardization of raw EMR exports, this pipeline ensures that downstream analytics platforms receive clean, structured, and deduplicated healthcare data, enabling smarter strategies and better patient outcomes.
+•Leveraged pg-format for optimized multi-row INSERT statements, resulting in a significantly faster ingestion rate compared to standard insertion methods.
